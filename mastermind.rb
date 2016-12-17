@@ -18,10 +18,13 @@ class MastermindGame
 		make_guess
 	end
 
-	def make_guess(artificial_int = [])
+	def make_guess
 		guess = computer_generate_code
+		@cheater.each { |key, value| guess[key] = value }
 		puts guess
+		turn_number
 		check_computer_answer(guess)
+		make_guess()
 
 	end
 
@@ -29,6 +32,7 @@ class MastermindGame
 		half_correct = 0
 		full_correct = 0
 		minor = []
+		@cheater = {}
 		@master.each { |each| minor << each }
 		for i in 0...@x
 			if minor.include? guess[i]
@@ -37,6 +41,7 @@ class MastermindGame
 				minor[dupe] = "x" 
 			end
 			if @master[i] == guess[i]
+				@cheater[i] = @master[i]
 				half_correct -= 1
 				full_correct += 1
 			end
