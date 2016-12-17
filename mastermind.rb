@@ -14,7 +14,8 @@ class MastermindGame
 
 	def code_maker_initialize
 		@master = player_generate_code
-		@cheater = {}
+		@cheater_exact = {}
+		@cheater_partial = []
 		make_guess
 	end
 
@@ -28,7 +29,8 @@ class MastermindGame
 
 	def make_guess
 		guess = computer_generate_code
-		@cheater.each { |key, value| guess[key] = value }
+		@cheater_exact.each { |key, value| guess[key] = value }
+		partials_included?(guess)
 		puts "\nComputer's turn number: #{@turn_number}\n Guess: #{guess}"
 		check_computer_answer(guess)
 		if guess == @master
@@ -38,26 +40,44 @@ class MastermindGame
 				new_turn
 				make_guess()
 			else 
-				puts "Wow, I can't believe it, you fought the machine and won!"
+				puts "\nWow, I can't believe it, you fought the machine and won!"
 			end
 		end
 		replay?
+	end
+
+	def partials_included?(guess)
+		guess_copy = []
+		guess.each { |guess| guess_copy << guess}
+		@cheater_exact.each { |key, value| guess_copy[key] = 10 }
+		if @cheater_partial.length > 0
+			@cheater_partial.each do |digit|
+				if guess_copy.include? digit
+					guess_copy.delete_at(guess_copy.index(digit))
+				else
+					make_guess
+				end
+			end
+		end
 	end
 
 	def check_computer_answer(guess)
 		half_correct = 0
 		full_correct = 0
 		minor = []
-		@cheater = {}
+		@cheater_exact = {}
+		@cheater_partial = []
 		@master.each { |each| minor << each }
 		for i in 0...@x
 			if minor.include? guess[i]
 				half_correct += 1 
 				dupe = minor.find_index(guess[i])
 				minor[dupe] = "x" 
+				@cheater_partial << guess[i]
 			end
 			if @master[i] == guess[i]
-				@cheater[i] = @master[i]
+				@cheater_exact[i] = @master[i]
+				@cheater_partial.delete_at(@cheater_partial.index(@master[i]) || @cheater_partial.length)
 				half_correct -= 1
 				full_correct += 1
 			end
