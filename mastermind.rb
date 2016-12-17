@@ -32,7 +32,7 @@ class MastermindGame
 		puts "\nComputer's turn number: #{@turn_number}\n Guess: #{guess}"
 		check_computer_answer(guess)
 		if guess == @master
-			puts "Bow down to your new mahine overlord... the computer has cracked your best code in only #{@turn_number} tries."
+			puts "\nBow down to your new machine overlord... the computer has cracked your best code in only #{@turn_number} tries."
 		else
 			unless @turn_number == 12
 				new_turn
@@ -41,6 +41,7 @@ class MastermindGame
 				puts "Wow, I can't believe it, you fought the machine and won!"
 			end
 		end
+		replay?
 	end
 
 	def check_computer_answer(guess)
@@ -112,7 +113,12 @@ class MastermindGame
 	end
 
 	def winner
-		puts "You win! You masterminded the whole thing, didn't you?\nWinning code: #{@master.join(" ")}\nWould you like to play again? (y to play again, anything else will exit the game)"
+		puts "You win! You masterminded the whole thing, didn't you?\nWinning code: #{@master.join(" ")}"
+		replay?
+	end
+
+	def replay?
+		puts "\nWould you like to play again? (y to play again, anything else will exit the game)"
 		start_over = gets.chomp
 		MastermindGame.new if start_over == "y"
 		exit
