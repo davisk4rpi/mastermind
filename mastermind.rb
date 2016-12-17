@@ -7,6 +7,30 @@ class MastermindGame
 		welcome_introduction
 	end
 
+	def welcome_introduction
+		puts <<~HEREDOC
+					Welcome to Mastermind, here is how it is played.
+					 The codemaker will create a #{@x} digit combination using the 
+					 numbers 1, 2, 3, 4, 5, and 6. Duplicates are allowed. The 
+					 codebreaker will then have 12 turns to correctly guess the 
+					 code. After each guess, the codebreaker will be told how many 
+					 numbers were guessed EXACTLY correct (correct number and 
+					 placement) and how many were only PARTIALLY correct (correct 
+					 number but not placement).
+
+					 Type 1 to be the codebreaker, or 2 to be the codemaker
+					 Anything else will exit the game.
+					 HEREDOC
+		answer = gets.chomp
+		if answer == "1"
+			code_breaker_initialize
+		elsif answer == "2"
+			code_maker_initialize
+		else
+			exit
+		end
+	end
+
 	def code_breaker_initialize
 		@master = computer_generate_code
 		ask_for_guess
@@ -32,7 +56,7 @@ class MastermindGame
 		@cheater_exact.each { |key, value| guess[key] = value }
 		partials_included?(guess)
 		puts "\nComputer's turn number: #{@turn_number}\n Guess: #{guess}"
-		check_computer_answer(guess)
+		check_answer(guess)
 		if guess == @master
 			puts "\nBow down to your new machine overlord... the computer has cracked your best code in only #{@turn_number} tries."
 		else
@@ -61,7 +85,48 @@ class MastermindGame
 		end
 	end
 
-	def check_computer_answer(guess)
+	def computer_generate_code
+		@code = []
+		@x.times { @code << @options.sample }
+		return @code
+	end
+
+	def ask_for_guess
+		puts "\nTurn \##{@turn_number}\nwhat is your guess?"
+		guess = gets.chomp
+		user_input_check(guess, "guess"){ask_for_guess}
+		guess = guess.chars.map { |i| i.to_i }
+		puts ""
+		puts guess.join(" ")
+		if guess == @master
+			winner
+		elsif @turn_number == 12
+			puts "Thats all you get, better luck next time!\nSince it's probably killing you, the winning code was #{@master.join(' ')}"
+			replay?
+		else
+			check_answer(guess)
+			new_turn
+			ask_for_guess
+		end
+	end
+
+	def winner
+		puts "\nYou win! You masterminded the whole thing, didn't you?\nWinning code: #{@master.join(" ")}"
+		replay?
+	end
+
+	def replay?
+		puts "\nWould you like to play again? (y to play again, anything else will exit the game)"
+		start_over = gets.chomp
+		MastermindGame.new if start_over == "y"
+		exit
+	end
+
+	def new_turn
+		@turn_number += 1
+	end
+
+	def check_answer(guess)
 		half_correct = 0
 		full_correct = 0
 		minor = []
@@ -78,88 +143,6 @@ class MastermindGame
 			if @master[i] == guess[i]
 				@cheater_exact[i] = @master[i]
 				@cheater_partial.delete_at(@cheater_partial.index(@master[i]) || @cheater_partial.length)
-				half_correct -= 1
-				full_correct += 1
-			end
-		end
-		puts "Number exactly correct: #{full_correct}\nNumber partially correct: #{half_correct}"
-	end
-
-	def welcome_introduction
-		puts <<~HEREDOC
-					Welcome to Mastermind, here is how it is played.
-					 The codemaker will create a #{@x} digit combination using the 
-					 numbers 1, 2, 3, 4, 5, and 6. Duplicates are allowed. The 
-					 codebreaker will then have 12 turns to correctly guess the 
-					 code. After each guess, the codebreaker will be told how many 
-					 numbers were guessed EXACTLY correct (correct number and 
-					 placement) and how many were only PARTIALLY correct (correct 
-					 number but not placement).
-
-					 Type 1 to be the codebreaker, or 2 to be the codemaker
-					 Anything else will exit the game.
-					 HEREDOC
-		answer = gets.chomp
-		if answer == "1"
-			code_breaker_initialize
-		elsif answer == "2"
-			code_maker_initialize
-		else
-			exit
-		end
-	end
-
-	def computer_generate_code
-		@code = []
-		@x.times { @code << @options.sample }
-		return @code
-	end
-
-	def ask_for_guess
-		puts "Turn \##{@turn_number}\nwhat is your guess?"
-		guess = gets.chomp
-		user_input_check(guess, "guess"){ask_for_guess}
-		guess = guess.chars.map { |i| i.to_i }
-		puts guess.join(" ")
-		if guess == @master
-			winner
-		elsif @turn_number == 12
-			puts "Thats all you get, better luck next time!\nSince it's probably killing you, the winning code was #{@master.join(' ')}"
-		else
-			check_player_answer(guess)
-			new_turn
-			ask_for_guess
-		end
-	end
-
-	def winner
-		puts "You win! You masterminded the whole thing, didn't you?\nWinning code: #{@master.join(" ")}"
-		replay?
-	end
-
-	def replay?
-		puts "\nWould you like to play again? (y to play again, anything else will exit the game)"
-		start_over = gets.chomp
-		MastermindGame.new if start_over == "y"
-		exit
-	end
-
-	def new_turn
-		@turn_number += 1
-	end
-
-	def check_player_answer(guess)
-		half_correct = 0
-		full_correct = 0
-		minor = []
-		@master.each { |each| minor << each }
-		for i in 0...@x
-			if minor.include? guess[i]
-				half_correct += 1 
-				dupe = minor.find_index(guess[i])
-				minor[dupe] = "x" 
-			end
-			if @master[i] == guess[i]
 				half_correct -= 1
 				full_correct += 1
 			end
