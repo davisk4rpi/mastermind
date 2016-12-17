@@ -74,7 +74,7 @@ class MastermindGame
 		guess_copy = []
 		guess.each { |guess| guess_copy << guess}
 		@cheater_exact.each { |key, value| guess_copy[key] = 10 }
-		if @cheater_partial.length > 0
+		while @cheater_partial.length > 0
 			@cheater_partial.each do |digit|
 				if guess_copy.include? digit
 					guess_copy.delete_at(guess_copy.index(digit))
