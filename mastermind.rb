@@ -18,6 +18,24 @@ class MastermindGame
 		make_guess
 	end
 
+	def player_generate_code
+		puts "OK, using only the numbers 1, 2, 3, 4, 5, or 6, enter the best #{@x} digit code you can think of."
+		secret_code = gets.chomp
+		unless secret_code.length == @x
+			puts "The code must be exactly #{@x} numbers long, try again"
+			player_generate_code
+		end
+		secret_code = secret_code.chars.map do |i| 
+			if @options.include? i.to_i
+				i.to_i
+			else
+				puts "Please enter a valid code using only combinations of 1, 2, 3, 4, 5, or 6."
+				player_generate_code
+			end
+		end
+		puts secret_code.join(" ")
+  end 
+
 	def make_guess
 		guess = computer_generate_code
 		@cheater.each { |key, value| guess[key] = value }
@@ -49,9 +67,19 @@ class MastermindGame
 		puts "Number exactly correct: #{full_correct}\nNumber partially correct: #{half_correct}"
 	end
 
-
 	def welcome_introduction
-		puts "Welcome to Mastermind, type 1 to be the codebreaker, or 2 to be the codemaker\nAnything else will exit the game."
+		puts <<~HEREDOC
+					Welcome to Mastermind, the codemaker will create a #{@x} digit 
+					combination using the numbers 1, 2, 3, 4, 5, and 6. Duplicates 
+					are allowed. The codebreaker will then have 12 turns to correctly 
+					guess the code. After each guess, the codebreaker will be told 
+					how many numbers were guessed EXACTLY correct (correct number and 
+					placement) and how many were only PARTIALLY correct (correct 
+					number but not placement).
+					
+					Type 1 to be the codebreaker, or 2 to be the codemaker
+					Anything else will exit the game.
+					HEREDOC
 		answer = gets.chomp
 		if answer == "1"
 			code_breaker_initialize
@@ -74,21 +102,22 @@ class MastermindGame
 			puts "The guess must be #{@x} numbers long, try again"
 			ask_for_guess
 		end
-		begin
-			guess = guess.chars.map {|i| i.to_i }
-			puts guess.join(" ")
-		rescue
-			puts "Please enter a valid guess using only combinations of 1, 2, 3, 4, 5, or 6."
-		else
-			if guess == @master
-				winner
-			elsif @turn_number == 12
-				puts "Thats all you get, better luck next time!\nSince it's probably killing you, the winning code was #{@master.join(' ')}"
-			else
-				check_player_answer(guess)
-				new_turn
+		guess = guess.chars.map { |i| i.to_i }
+		guess.each do |i| 
+			unless @options.include? i
+				puts "Please enter a valid guess using only combinations of 1, 2, 3, 4, 5, or 6."
 				ask_for_guess
 			end
+		end
+		puts guess.join(" ")
+		if guess == @master
+			winner
+		elsif @turn_number == 12
+			puts "Thats all you get, better luck next time!\nSince it's probably killing you, the winning code was #{@master.join(' ')}"
+		else
+			check_player_answer(guess)
+			new_turn
+			ask_for_guess
 		end
 	end
 
