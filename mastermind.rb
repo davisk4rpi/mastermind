@@ -1,6 +1,7 @@
 class MastermindGame
 	
 	def initialize
+		system "clear" or system "cls"
 		@x = 4 #length of secret code
 		@options = [1, 2, 3, 4, 5, 6]
 		@turn_number = 1
